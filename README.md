@@ -13,3 +13,11 @@ You can re-configure the haproxy servers firewalls easily with the 'ufw' tag:
 
 ## TODO
 * Add support for multiple floating IPs, as it currently won't configure all of them for you.
+
+
+## Quick Start Guide
+
+1) Create a vars/secrets.yml file if running locally, fill in the {{ pacemaker_hacluster_password }} variable for the webUI.
+
+
+2) Define the {{ corosync_bindnet_interface }} variable...
