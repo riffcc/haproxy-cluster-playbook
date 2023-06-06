@@ -2,6 +2,13 @@
 # Environment name - determines which secrets file will be loaded
 env_name: pchq
 
+# Floating IPs used for the HAProxies.
+loadbalancer_floating_ips: [
+  10.1.20.2,
+  10.1.20.3,
+  10.1.20.4
+]
+
 corosync_bindnet_interface: 'ens18'
 
 # ufw_allow_dict:

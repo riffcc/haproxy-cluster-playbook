@@ -33,20 +33,28 @@ defaults
     errorfile 503 /etc/haproxy/errors/503.http
     errorfile 504 /etc/haproxy/errors/504.http
 
-#listen stats
-#    mode http
-#    bind *:8443 ssl crt /etc/wildcard-tls/latest/generic/_.estuary.tech-combined.pem
-#    stats enable
-#    stats uri /
-#    stats admin if LOCALHOST
+listen stats
+    mode http
+    bind *:8080
+    stats enable
+    stats uri /
+    stats admin if LOCALHOST
 
 frontend pchq_postgresql
-    bind *:52432
+    bind *:5432
     mode tcp
     option tcplog
     timeout client 1h
     log global
     default_backend pchq_postgresql
+
+frontend pchq_postgresql_read
+    bind *:5433
+    mode tcp
+    option tcplog
+    timeout client 1h
+    log global
+    default_backend pchq_postgresql_read
 
 backend pchq_postgresql
     balance source
@@ -66,8 +74,10 @@ backend pchq_postgresql_read
     mode tcp
     timeout connect 90000
     timeout server 1h
+    option httpchk
+    http-check expect status 503
     timeout check 5000
     default-server inter 3s fall 3 rise 2 on-marked-down shutdown-sessions
-    server postgres01 postgres01.penholder.xyz:5432 check
-    server postgres02 postgres02.penholder.xyz:5432 check
-    server postgres03 postgres03.penholder.xyz:5432 check
+    server postgres01 postgres01.penholder.xyz:5432 check port 8008
+    server postgres02 postgres02.penholder.xyz:5432 check port 8008
+    server postgres03 postgres03.penholder.xyz:5432 check port 8008
