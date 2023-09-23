@@ -28,6 +28,19 @@ haproxy_stats_port: 8080
 
 # Frontends
 haproxy_frontends:
+  - name: http
+    address: "*"
+    port: 80
+    mode: http
+    default_backend: http_backend
+  - name: https
+    address: "*"
+    port: 443
+    mode: tcp
+    ssl: true
+    crts:
+      - "/etc/haproxy/certs/ strict-sni"
+    default_backend: https_backend
   - name: kubeAPI
     address: "*"
     port: 6443
