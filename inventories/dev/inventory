@@ -1,3 +1,4 @@
-# Estuary HAAPI dev
 [loadbalancer]
-dev-haproxy[01:03].estuary.tech
+haproxy01.riff.cc ansible_user=pchq
+haproxy02.riff.cc ansible_user=riff
+haproxy03.riff.cc ansible_user=riff

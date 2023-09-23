@@ -1,0 +1,3 @@
+---
+# Empty list we can populate later.
+loadbalancer_pacemaker_cluster_resources: []

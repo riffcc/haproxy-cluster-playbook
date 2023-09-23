@@ -1,3 +1,0 @@
-# Estuary inventory for Estuary Hosted Infrastructure HAProxies
-[loadbalancer]
-prod-haproxy[01:03].estuary.tech

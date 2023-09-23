@@ -1,0 +1,43 @@
+---
+- name: Generate a list of floating IPs based on the user's preferences (multi)
+  set_fact:
+    loadbalancer_floating_ips: "{{ loadbalancer_floating_ips | default([]) | union(range(floating_ip_start | ansible.utils.ipaddr('int'), floating_ip_start | ansible.utils.ipaddr('int') + floating_ip_count) | list) | map('ansible.utils.ipaddr') | list }}"
+  when: floating_ip_mode == "multi"
+
+- name: Generate a list of floating IPs based on the user's preferences (single)
+  set_fact:
+    loadbalancer_floating_ips: "{{ loadbalancer_floating_ips | default([]) | union([floating_ip_start]) | map('ansible.utils.ipaddr') | list }}"
+  when: floating_ip_mode == "single"
+
+- name: Print loadbalancer_floating_ips
+  debug:
+    var: loadbalancer_floating_ips
+
+- name: Generate loadbalancer_pacemaker_cluster_resources
+  set_fact:
+    loadbalancer_pacemaker_cluster_resources: >-
+      {{ loadbalancer_pacemaker_cluster_resources + [
+        {
+          'resource_id': 'virtual_ip_' + (index + 1) | string,
+          'action': 'create',
+          'provider': 'ocf:heartbeat:IPaddr2',
+          'options': [
+            'ip=' + item,
+            'cidr_netmask=32',
+            'nic=' + corosync_bindnet_interface
+          ],
+          'op': 'monitor',
+          'op_options': ['interval=8s']
+        }
+      ] }}
+  loop: "{{ loadbalancer_floating_ips }}"
+  loop_control:
+    index_var: index
+
+- name: Generate pacemaker_cluster_resources based on loadbalancer_pacemaker_cluster_resources + my_pacemaker_cluster_resources
+  set_fact:
+    pacemaker_cluster_resources: "{{ loadbalancer_pacemaker_cluster_resources + my_pacemaker_cluster_resources }}"
+
+- name: Print pacemaker_cluster_resources
+  debug:
+    var: pacemaker_cluster_resources

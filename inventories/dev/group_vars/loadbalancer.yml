@@ -1,0 +1,111 @@
+---
+# Name of the Corosync cluster. Purely cosmetic, but changing it once you've built your cluster is fairly involved.
+corosync_cluster_name: 'riff'
+# Set the network interface for Corosync to bind to. Mandatory.
+corosync_bindnet_interface: 'enp6s18'
+
+# Set floating IP mode. "single" will provision a single IP address, whereas "multi" will provision your choice of IP addresses.
+# You must set floating_ip_start to the first IP address you want to provision as a floating IP.
+# If you choose "multi", you must also specify the number of IP addresses to provision.
+floating_ip_mode: "multi"
+floating_ip_start: "10.1.1.101"
+floating_ip_count: 3
+
+# Set pacemaker cluster resources. Don't include the virtual IP resources here, they will be generated automatically.
+my_pacemaker_cluster_resources:
+  - resource_id: 'loadbalancer'
+    action: 'create'
+    provider: 'lsb:haproxy'
+    op: 'monitor'
+    op_options:
+      - 'timeout=5s'
+      - 'interval=5s'
+      - 'clone'
+
+# HAProxy settings
+haproxy_stats: true
+haproxy_stats_port: 8080
+
+# Frontends
+haproxy_frontends:
+  - name: kubeAPI
+    address: "*"
+    port: 6443
+    mode: tcp
+    default_backend: kubeAPI_backend
+  - name: konnectivity
+    address: "*"
+    port: 8132
+    mode: tcp
+    default_backend: konnectivity_backend
+  - name: controllerJoinAPI
+    address: "*"
+    port: 9443
+    mode: tcp
+    default_backend: controllerJoinAPI_backend
+
+# Backends
+haproxy_backends:
+  - name: kubeAPI_backend
+    httpcheck: false
+    balance: roundrobin
+    port: 6443
+    mode: tcp
+    options:
+      - 'check'
+      - 'check-ssl'
+      - 'verify none'
+    servers:
+      - name: k0s-controller1
+        address: 10.1.1.31
+      - name: k0s-controller2
+        address: 10.1.1.32
+      - name: k0s-controller3
+        address: 10.1.1.33
+  - name: konnectivity_backend
+    httpcheck: false
+    balance: roundrobin
+    port: 8132
+    mode: tcp
+    options:
+      - 'check'
+      - 'check-ssl'
+      - 'verify none'
+    servers:
+      - name: k0s-controller1
+        address: 10.1.1.31
+      - name: k0s-controller2
+        address: 10.1.1.32
+      - name: k0s-controller3
+        address: 10.1.1.33
+  - name: controllerJoinAPI_backend
+    httpcheck: false
+    balance: roundrobin
+    port: 9443
+    mode: tcp
+    options:
+      - 'check'
+      - 'check-ssl'
+      - 'verify none'
+    servers:
+      - name: k0s-controller1
+        address: 10.1.1.31
+      - name: k0s-controller2
+        address: 10.1.1.32
+      - name: k0s-controller3
+        address: 10.1.1.33
+
+# Other pacemaker settings, leave them alone unless you have a good reason to change them.
+corosync_expected_votes: "{{ ( groups[pacemaker_cluster_group]|count /2 ) | round (0, 'ceil') | int }}"
+pacemaker_cluster_group: 'loadbalancer'
+pacemaker_cluster_settings:
+  - property: 'start-failure-is-fatal'
+    value: 'false'
+  - property: 'pe-warn-series-max'
+    value: 1000
+  - property: 'pe-input-series-max'
+    value: 1000
+  - property: 'pe-error-series-max'
+    value: 1000
+  - property: 'cluster-recheck-interval'
+    value: 5min

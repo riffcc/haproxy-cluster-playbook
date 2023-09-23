@@ -1,3 +1,4 @@
 ---
 roles:
   - name: zorlin.pacemaker
+  - name: robertdebock.haproxy
