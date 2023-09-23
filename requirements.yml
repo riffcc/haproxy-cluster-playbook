@@ -1,4 +1,6 @@
 ---
 roles:
   - name: zorlin.pacemaker
-  - name: robertdebock.haproxy
+  #- name: robertdebock.haproxy
+  # We forked robertdebock's role for now, but hope to contribute our patches upstream
+  - name: zorlin.haproxy
