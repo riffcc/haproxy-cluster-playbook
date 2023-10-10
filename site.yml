@@ -7,6 +7,6 @@
     # Use the user's settings to build a list of floating IPs and Pacemaker resources and set them for later usage.
     - generate_pacemaker_resources
     # Install and configure HAProxy
-    - robertdebock.haproxy
+    - zorlin.haproxy
     # Set up a Pacemaker cluster with the settings from earlier
     - zorlin.pacemaker
